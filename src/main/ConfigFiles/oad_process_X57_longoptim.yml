@@ -1,0 +1,167 @@
+title: Sample OAD Process applied to beechcraft
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: ../InputFiles/problem_inputs_X_57.xml
+output_file: ../OutputFiles/problem_outputs_X_57.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+submodels:
+    submodel.geometry.propeller.position : null
+    submodel.geometry.mfw: null
+    submodel.geometry.landing_gear: fastga.submodel.geometry.landing_gear.geometric
+    submodel.weight.mass.propulsion : fastga.submodel.weight.mass.propulsion.electric
+    submodel.weight.cg.propulsion : fastga.submodel.weight.cg.propulsion.electric
+    submodel.aerodynamics.other.cd0: fastga.submodel.aerodynamics.other.cd0.legacy
+    submodel.weight.cg.aircraft_empty.x : fastga.submodel.weight.cg.aircraft_empty.x.electric_propulsion
+    submodel.weight.cg.aircraft_empty.z: fastga.submodel.weight.cg.aircraft_empty.z.geometric
+    submodel.weight.mass.system.power_system: fastga.submodel.weight.mass.system.power_system.electric
+    submodel.weight.mass.airframe.wing : fastga.submodel.weight.mass.airframe.wing.legacy
+    submodel.weight.cg : fastga.submodel.weight.cg.electric_propulsion
+    submodel.weight.cg.loadcase.ground: fastga.submodel.weight.cg.loadcase.ground.electric
+    submodel.weight.cg.loadcase.flight: fastga.submodel.weight.cg.loadcase.flight.electric
+
+
+model:
+    nonlinear_solver: om.NonlinearBlockGS(maxiter=25, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True, aitken_max_factor=0.7, aitken_min_factor=0.1, use_aitken=True)
+    linear_solver: om.DirectSolver()
+    aircraft_sizing:
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=40, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True, aitken_max_factor=0.8, aitken_min_factor=0.2, use_aitken=True)
+        linear_solver: om.DirectSolver()
+        geometry_power:
+            nonlinear_solver: om.NonlinearBlockGS(maxiter=25, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
+            linear_solver: om.DirectSolver()
+            electric_powertain:
+                id: fastga.electric_powertrain.legacy
+            geometry:
+                id: fastga.geometry.legacy
+                propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+        aerodynamics_lowspeed:
+            id: fastga.aerodynamics.lowspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+            result_folder_path : ./workdir
+            use_openvsp : true
+            compute_slipstream : false
+            openvsp_exe_path: ./openvsp
+        aerodynamics_highspeed:
+            id: fastga.aerodynamics.highspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+            result_folder_path : ./workdir
+            use_openvsp : true
+            compute_mach_interpolation : false
+            compute_slipstream : false
+        weight:
+            id: fastga.weight.legacy
+            propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+        mtow:
+            id: fastga.loop.mtow
+        hq:
+            tail_sizing:
+                id: fastga.handling_qualities.tail_sizing
+                propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+            static_margin:
+                id: fastga.handling_qualities.static_margin
+            wing_position:
+                id: fastga.loop.wing_position
+        wing_area:
+            id: fastga.loop.additiona_CL_capacity # fastga.loop.wing_area
+            propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+    mission:
+        takeoff:
+             id: fastga.performances.mission.takeoff_E_PA
+             propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+        performance:
+            id: fastga.performances.mission_E_PA
+            propulsion_id: fastga.wrapper.propulsion.basic_Eengine
+            out_file: ./workdir/mda_mission_results.csv
+
+
+optimization: # This section is needed only if optimization process is run
+   design_variables:
+     - name: data:mission:sizing:max_motor_shaft_power_to_weight
+       lower: 7.0
+       upper: 10.0
+       ref0: 7.0
+       ref: 10.0
+#     - name: data:geometry:flap:chord_ratio
+#       lower: 0.1
+#       upper: 0.4
+#       ref0: 0.1
+#       ref: 0.4
+#     - name: data:geometry:flap:span_ratio
+#       lower: 0.7
+#       upper: 0.9
+#       ref0: 0.7
+#       ref: 0.9
+#     - name: data:geometry:propeller:blade_pitch_angle
+#       lower: 25.0
+#       upper: 45.0
+#       ref0: 25.0
+#       ref: 45.0
+     - name: data:geometry:propeller:diameter
+       lower: 0.4
+       upper: 1.0
+       ref0: 0.4
+       ref: 1.0
+     - name: data:geometry:wing:taper_ratio
+       lower: 0.1
+       upper: 1.0
+       ref0: 0.1
+       ref: 1.0
+     - name: data:geometry:wing:aspect_ratio
+       lower: 12.0
+       upper: 22.0
+       ref0: 12.0
+       ref: 22.0
+     - name: data:geometry:horizontal_tail:taper_ratio
+       lower: 0.1
+       upper: 1.2
+       ref0: 0.1
+       ref: 1.2
+     - name: data:geometry:horizontal_tail:aspect_ratio
+       lower: 1.0
+       upper: 6.0
+       ref0: 1.0
+       ref: 6.0
+     - name: data:geometry:wing:area
+       lower: 6.0
+       upper: 12.0
+       ref0: 6.0
+       ref: 12.0
+
+
+   constraints:
+     - name: data:mission:sizing:takeoff:TOFL
+       upper: 727                        # 726
+       ref0: 200
+       ref: 1000
+     - name: data:geometry:wing:span
+       upper: 12.0  # around 12
+       ref0: 10
+       ref: 12
+     - name: data:mission:sizing:main_route:climb:duration # the one in original mission
+       upper: 420.0
+       ref0: 300
+       ref: 500
+#     - name: data:mission:sizing:main_route:climb:gradient_rad # in original mission it was around 5 degrees
+#       lower: 0.09229 # 5.28 degree
+#       ref0: 0.0349
+#       ref: 0.104719
+     - name: data:constraints:wing:additional_CL_capacity
+       upper: 1.0
+       lower: 0.0
+     - name: data:geometry:propeller:available_space_propellers
+       lower: 0.0
+       ref0: 0.0
+       ref: 0.3
+
+
+   objective:
+     - name: data:weight:aircraft:MTOW
+       scaler: 1.e-3
+
+
