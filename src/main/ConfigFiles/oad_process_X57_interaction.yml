@@ -36,19 +36,19 @@ model:
             nonlinear_solver: om.NonlinearBlockGS(maxiter=25, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
             linear_solver: om.DirectSolver()
             electric_powertain:
-                id: fastga.electric_powertrain.legacy
+                id: fastga.electric_powertrain_PA.legacy
             geometry:
                 id: fastga.geometry.legacy
                 propulsion_id: fastga.wrapper.propulsion.basic_Eengine
         aerodynamics_lowspeed:
-            id: fastga.aerodynamics.lowspeed.legacy
+            id: fastga.aerodynamics.lowspeed_PA.legacy
             propulsion_id: fastga.wrapper.propulsion.basic_Eengine
             result_folder_path : ./workdir
             use_openvsp : true
             compute_slipstream : false
             openvsp_exe_path: ./openvsp
         aerodynamics_highspeed:
-            id: fastga.aerodynamics.highspeed.legacy
+            id: fastga.aerodynamics.highspeed_PA.legacy
             propulsion_id: fastga.wrapper.propulsion.basic_Eengine
             result_folder_path : ./workdir
             use_openvsp : true
@@ -61,7 +61,7 @@ model:
             id: fastga.loop.mtow
         hq:
             tail_sizing:
-                id: fastga.handling_qualities.tail_sizing
+                id: fastga.handling_qualities.tail_sizing_PA
                 propulsion_id: fastga.wrapper.propulsion.basic_Eengine
             static_margin:
                 id: fastga.handling_qualities.static_margin
@@ -83,61 +83,61 @@ model:
 optimization: # This section is needed only if optimization process is run
    design_variables:
      - name: data:mission:sizing:max_motor_shaft_power_to_weight
-       lower: 7.0
-       upper: 10.0
-       ref0: 7.0
-       ref: 10.0
-#     - name: data:geometry:flap:chord_ratio
-#       lower: 0.1
-#       upper: 0.4
-#       ref0: 0.1
-#       ref: 0.4
-#     - name: data:geometry:flap:span_ratio
-#       lower: 0.7
-#       upper: 0.9
-#       ref0: 0.7
-#       ref: 0.9
-#     - name: data:geometry:propeller:blade_pitch_angle
-#       lower: 25.0
-#       upper: 45.0
-#       ref0: 25.0
-#       ref: 45.0
+       lower: 8.0
+       upper: 9.0
+       ref0: 8.0
+       ref: 9.0
+     - name: data:geometry:flap:chord_ratio
+       lower: 0.1
+       upper: 0.4
+       ref0: 0.1
+       ref: 0.4
+     - name: data:geometry:flap:span_ratio
+       lower: 0.7
+       upper: 0.9
+       ref0: 0.7
+       ref: 0.9
+     - name: data:geometry:propeller:blade_pitch_angle
+       lower: 25.0
+       upper: 40.0
+       ref0: 25.0
+       ref: 40.0
      - name: data:geometry:propeller:diameter
-       lower: 0.4
-       upper: 1.0
-       ref0: 0.4
-       ref: 1.0
+       lower: 0.6
+       upper: 0.75
+       ref0: 0.6
+       ref: 0.75
      - name: data:geometry:wing:taper_ratio
-       lower: 0.1
-       upper: 1.0
-       ref0: 0.1
-       ref: 1.0
+       lower: 0.2
+       upper: 0.2
+       ref0: 0.2
+       ref: 0.4
      - name: data:geometry:wing:aspect_ratio
-       lower: 12.0
-       upper: 22.0
-       ref0: 12.0
-       ref: 22.0
+       lower: 17.0
+       upper: 19.0
+       ref0: 17.0
+       ref: 19.0
      - name: data:geometry:horizontal_tail:taper_ratio
-       lower: 0.1
-       upper: 1.2
-       ref0: 0.1
-       ref: 1.2
+       lower: 0.6
+       upper: 0.9
+       ref0: 0.6
+       ref: 0.9
      - name: data:geometry:horizontal_tail:aspect_ratio
-       lower: 1.0
-       upper: 6.0
-       ref0: 1.0
-       ref: 6.0
+       lower: 5.5
+       upper: 6.5
+       ref0: 5.5
+       ref: 6.5
      - name: data:geometry:wing:area
-       lower: 6.0
-       upper: 12.0
-       ref0: 6.0
-       ref: 12.0
+       lower: 7.0
+       upper: 8
+       ref0: 7.0
+       ref: 8.0
 
 
    constraints:
      - name: data:mission:sizing:takeoff:TOFL
        upper: 727                        # 726
-       ref0: 200
+       ref0: 500
        ref: 1000
      - name: data:geometry:wing:span
        upper: 12.0  # around 12
@@ -152,7 +152,6 @@ optimization: # This section is needed only if optimization process is run
 #       ref0: 0.0349
 #       ref: 0.104719
      - name: data:constraints:wing:additional_CL_capacity
-       upper: 1.0
        lower: 0.0
      - name: data:geometry:propeller:available_space_propellers
        lower: 0.0

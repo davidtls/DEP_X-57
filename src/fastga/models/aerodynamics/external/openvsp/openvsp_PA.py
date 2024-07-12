@@ -35,6 +35,8 @@ from . import resources as local_resources
 from ... import airfoil_folder
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
+from .wing_file_generator import WingFileModifying
+
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
 INPUT_WING_SCRIPT = "wing_openvsp.vspscript"
@@ -241,7 +243,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_x_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
             cl_alpha_wing = (cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
+            area_vector_wing = wing_aoa["area_vector"]
             y_vector_wing = wing_aoa["y_vector"]
+            cl_vector_wing_0 = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
             cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
             chord_vector_wing = wing_aoa["chord_vector"]
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
@@ -264,12 +268,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 * area_ratio
                 / (aoa_angle * np.pi / 180)
             )
+            cl_0_htp_isolated = float(htp_0_isolated["cl"])
 
             # Resize vectors -----------------------------------------------------------------------
             if SPAN_MESH_POINT < len(y_vector_wing):
                 y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
                 cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
                 chord_vector_wing = np.interp(y_interp, y_vector_wing, chord_vector_wing)
+                cl_vector_wing_0 = np.interp(y_interp, y_vector_wing, cl_vector_wing_0)
+                area_vector_wing = np.interp(y_interp, y_vector_wing, area_vector_wing)
                 y_vector_wing = y_interp
                 warnings.warn(
                     "Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!"
@@ -279,6 +286,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 y_vector_wing.extend(additional_zeros)
                 cl_vector_wing.extend(additional_zeros)
                 chord_vector_wing.extend(additional_zeros)
+                cl_vector_wing_0.extend(additional_zeros)
+                area_vector_wing.extend(additional_zeros)
             if SPAN_MESH_POINT < len(y_vector_htp):
                 y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
                 cl_vector_htp = np.interp(y_interp, y_vector_htp, cl_vector_htp)
@@ -299,13 +308,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
+                    area_vector_wing,
                     cl_vector_wing,
+                    cl_vector_wing_0,
                     chord_vector_wing,
                     coeff_k_wing,
                     cl_0_htp,
                     cl_aoa_htp,
                     cl_alpha_htp,
                     cl_alpha_htp_isolated,
+                    cl_0_htp_isolated,
                     y_vector_htp,
                     cl_vector_htp,
                     coeff_k_htp,
@@ -345,6 +357,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 [float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")]
             ) * (area_ratio / saved_area_ratio)
             coeff_k_htp = float(data.loc["coeff_k_htp", 0]) * (area_ratio / saved_area_ratio)
+            area_vector_wing = np.array(
+                [float(i) for i in data.loc["area_vector_wing", 0][1:-2].split(",")]
+            ) * (s_ref_wing / saved_area_wing)
+            area_vector_wing = area_vector_wing * (s_ref_wing) / (2*sum(area_vector_wing))
+            cl_vector_wing_0 = np.array(
+                [float(i) for i in data.loc["cl_vector_wing_0", 0][1:-2].split(",")]
+            )
+            cl_0_htp_isolated = float(data.loc["cl_0_htp_isolated", 0]) * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -352,13 +372,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,
+            area_vector_wing,
             cl_vector_wing,
+            cl_vector_wing_0,
             chord_vector_wing,
             coeff_k_wing,
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
+            cl_0_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
             coeff_k_htp,
@@ -463,21 +486,28 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[0])
             # Modify wing parameters
             parser.mark_anchor("x_wing")
-            parser.transfer_var(float(x_wing), 0, 5)
+            parser.transfer_var(round(float(x_wing), 4), 0, 5)  # rounded to avoid topological errors
             parser.mark_anchor("z_wing")
-            parser.transfer_var(float(z_wing), 0, 5)
+            parser.transfer_var(round(float(z_wing), 4), 0, 5)  # rounded to avoid topological errors
             parser.mark_anchor("y1_wing")
-            parser.transfer_var(float(y1_wing), 0, 5)
+            parser.transfer_var(round(float(y1_wing), 4), 0, 5)  # rounded to avoid topological errors
             for i in range(3):
                 parser.mark_anchor("l2_wing")
-                parser.transfer_var(float(l2_wing), 0, 5)
+                parser.transfer_var(round(float(l2_wing), 4), 0, 5)  # rounded to avoid topological errors
+            parser.reset_anchor()
+            parser.mark_anchor("Tess_W")
+            parser.transfer_var(int(SPAN_MESH_POINT + 2), 0, 5)
+            parser.mark_anchor("SectTess_U")
+            parser.transfer_var(int(round((SPAN_MESH_POINT + 2)*8/41)), 0, 5)
+            parser.mark_anchor("SectTess_U")
+            parser.transfer_var(int((SPAN_MESH_POINT + 2) - int(round((SPAN_MESH_POINT + 2)*8/41))), 0, 5)
             parser.reset_anchor()
             parser.mark_anchor("span2_wing")
-            parser.transfer_var(float(span2_wing), 0, 5)
+            parser.transfer_var(round(float(span2_wing), 4), 0, 5)  # rounded to avoid topological errors
             parser.mark_anchor("l4_wing")
-            parser.transfer_var(float(l4_wing), 0, 5)
+            parser.transfer_var(round(float(l4_wing), 4), 0, 5)  # rounded to avoid topological errors
             parser.mark_anchor("sweep_0_wing")
-            parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.transfer_var(round(float(sweep_0_wing), 4), 0, 5)  # rounded to avoid topological errors
             parser.mark_anchor("twist")
             parser.transfer_var(float(twist), 0, 5)
             parser.mark_anchor("dihedral_angle")
@@ -495,9 +525,24 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
         ############################################################################################
-
         self.options["external_output_files"] = output_file_list
-        super().compute(inputs, outputs)
+
+        replacement_file = WingFileModifying()
+        count = 0
+        initiate = False
+
+        while True:
+            try:
+                super().compute(inputs, outputs)
+                break
+            except:
+                if not initiate:
+                    # We just want to set the file once
+                    replacement_file.set_file(input_file_list[0])
+                    initiate = True
+                if count < 20:
+                    replacement_file.replace_values(17)
+                    count += 1
 
         # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
         ############################################################################################
@@ -508,6 +553,12 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             input_file_list[0].replace(".csv", ".lod"),
             input_file_list[0].replace(".csv", ".polar"),
         ]
+
+        # Extra output file in order to read area_vector from .fem file
+        output_file_list_2 = [
+            input_file_list[0].replace(".csv", ".fem"),
+        ]
+
         self.options["external_input_files"] = input_file_list
         self.options["external_output_files"] = output_file_list
         self.options["command"] = [pth.join(target_directory, "vspaero.bat")]
@@ -591,12 +642,22 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         with open(output_file_list[1], "r") as file_stream:
             data = file_stream.readlines()
             wing_e = float(data[1].split()[10])
+        # Open .fem file and read area of span stations
+        wing_area_vect = []
+        with open(output_file_list_2[0], "r") as file_stream:
+            data = file_stream.readlines()
+            for i, _ in enumerate(data):
+                line = data[i].split()
+                line.append("**")
+                if line[0] == "1":
+                    wing_area_vect.append(float(line[11]))
         # Delete temporary directory
         if not self.options["openvsp_exe_path"]:
             # noinspection PyUnboundLocalVariable
             tmp_directory.cleanup()
         # Return values
         wing = {
+            "area_vector": wing_area_vect,
             "y_vector": wing_y_vect,
             "cl_vector": wing_cl_vect,
             "chord_vector": wing_chord_vect,
@@ -1234,13 +1295,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "cl_alpha_wing",
             "cm_0_wing",
             "y_vector_wing",
+            "area_vector_wing",
             "cl_vector_wing",
+            "cl_vector_wing_0",
             "chord_vector_wing",
             "coeff_k_wing",
             "cl_0_htp",
             "cl_X_htp",
             "cl_alpha_htp",
             "cl_alpha_htp_isolated",
+            "cl_0_htp_isolated",
             "y_vector_htp",
             "cl_vector_htp",
             "coeff_k_htp",

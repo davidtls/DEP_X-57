@@ -17,7 +17,8 @@ import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_PA import ComputeAEROopenvsp_PA
+from fastga.models.aerodynamics.components.compute_cl_max_blown_lowspeed import CLmaxBlownLowspeed
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
@@ -41,7 +42,7 @@ from .constants import (
 )
 
 
-@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed_PA.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsLowSpeed(om.Group):
     """Models for low speed aerodynamics."""
 
@@ -74,7 +75,7 @@ class AerodynamicsLowSpeed(om.Group):
         else:
             self.add_subsystem(
                 "aero_openvsp",
-                ComputeAEROopenvsp(
+                ComputeAEROopenvsp_PA(
                     low_speed_aero=True,
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
@@ -204,3 +205,11 @@ class AerodynamicsLowSpeed(om.Group):
                 ),
                 promotes=["data:*"],
             )
+
+        self.add_subsystem(
+            "cl_max_blown",
+            CLmaxBlownLowspeed(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+            
+

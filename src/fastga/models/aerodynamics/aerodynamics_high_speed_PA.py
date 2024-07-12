@@ -17,7 +17,7 @@ from openmdao.core.group import Group
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_PA import ComputeAEROopenvsp_PA
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
 
 # noinspection PyProtectedMember
@@ -39,7 +39,7 @@ from .constants import (
 )
 
 
-@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed_PA.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsHighSpeed(Group):
     """Models for high speed aerodynamics."""
 
@@ -97,7 +97,7 @@ class AerodynamicsHighSpeed(Group):
             if self.options["compute_mach_interpolation"]:
                 self.add_subsystem(
                     "aero_openvsp",
-                    ComputeAEROopenvsp(
+                    ComputeAEROopenvsp_PA(
                         low_speed_aero=False,
                         compute_mach_interpolation=True,
                         result_folder_path=self.options["result_folder_path"],
@@ -111,7 +111,7 @@ class AerodynamicsHighSpeed(Group):
             else:
                 self.add_subsystem(
                     "aero_openvsp",
-                    ComputeAEROopenvsp(
+                    ComputeAEROopenvsp_PA(
                         low_speed_aero=False,
                         compute_mach_interpolation=False,
                         result_folder_path=self.options["result_folder_path"],
@@ -212,3 +212,4 @@ class AerodynamicsHighSpeed(Group):
                 ),
                 promotes=["data:*"],
             )
+

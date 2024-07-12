@@ -26,7 +26,6 @@ from .components import (
     ComputeCores,
 )
 
-
 @RegisterOpenMDAOSystem("fastga.electric_powertrain.legacy", domain=ModelDomain.GEOMETRY)
 class ComputeElectricPowertrain(om.Group):
 

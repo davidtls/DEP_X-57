@@ -45,10 +45,14 @@ class ComputeElectricMotor(om.ExplicitComponent):
         self.winding_temp_ref = 100  # [°C]
 
     def setup(self):
-        self.add_input("data:mission:sizing:main_route:climb:max_motor_shaft_power", val=np.nan, units="W")
         self.add_input("data:mission:sizing:main_route:climb:max_motor_rpm", val=np.nan, units="rad/s")
         self.add_input("data:propulsion:electric_powertrain:motor:sizing_delta_isa", val=np.nan, units="degC")
         self.add_input("data:propulsion:electric_powertrain:motor:sizing_altitude", val=np.nan, units='m')
+
+        # fixme: We use ratio between max motor shaft power and ratio, instead of sizing max power with climb
+        # self.add_input("data:mission:sizing:main_route:climb:max_motor_shaft_power", val=np.nan, units="W")
+        self.add_input("data:mission:sizing:max_motor_shaft_power_to_weight", val=100/12, units="W/kg")
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
 
         self.add_output("data:geometry:electric_powertrain:motor:length", units="m")
         self.add_output("data:geometry:electric_powertrain:motor:diameter", units="m")
@@ -74,7 +78,8 @@ class ComputeElectricMotor(om.ExplicitComponent):
         The sizing law is done by scaling a reference motor
         """
         rad_per_sec_design = inputs["data:mission:sizing:main_route:climb:max_motor_rpm"]
-        power_design = inputs["data:mission:sizing:main_route:climb:max_motor_shaft_power"]
+        power_design = inputs["data:mission:sizing:max_motor_shaft_power_to_weight"] * inputs["data:weight:aircraft:MTOW"]
+        # power_design = inputs["data:mission:sizing:main_route:climb:max_motor_shaft_power"]
         d_isa = inputs['data:propulsion:electric_powertrain:motor:sizing_delta_isa']
         altitude = inputs['data:propulsion:electric_powertrain:motor:sizing_altitude']
 
@@ -88,7 +93,7 @@ class ComputeElectricMotor(om.ExplicitComponent):
         P_losses_ref = delta_T * Rth
 
         W_nom_ref = self.nom_rot_speed_ref  # Reference nominal speed
-        W_peak_ref = self.max_rot_speed_ref # Reference peak speed
+        W_peak_ref = self.max_rot_speed_ref  # Reference peak speed
         T_nom_ref = self.nom_torque_ref  # Reference nominal torque
         T_peak_ref = self.peak_torque_ref  # Reference peak torque
 
