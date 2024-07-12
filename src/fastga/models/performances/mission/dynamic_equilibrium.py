@@ -68,6 +68,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.error_on_pitch_equilibrium = False
         self.delta_e_sol = 0.0
         self.cd_aircraft_sol = 0.0
+        self.cd0 = 0.0
+        self.cd0_flaps = 0.0
+        self.cd_ind_wing = 0.0
+        self.cd_ind_htp = 0.0
+        self.cd_delta_e = 0.0
         self.flight_points = []
 
     def initialize(self):
@@ -188,6 +193,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
         delta_elevator = self.delta_e_sol
         cd_aircraft_local = self.cd_aircraft_sol
 
+        cd0 = self.cd0
+        cd0_flaps = self.cd0_flaps
+        cd_ind_wing = self.cd_ind_wing
+        cd_ind_htp = self.cd_ind_htp
+        cd_delta_e = self.cd_delta_e
+
         error_on_htp = bool((cl_htp_local > cl_max_clean_htp) or (cl_htp_local < cl_min_clean_htp))
 
         error_on_wing = self.error_on_pitch_equilibrium
@@ -201,6 +212,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
             cl_htp_local,
             delta_elevator,
             cd_aircraft_local,
+            cd0,
+            cd0_flaps,
+            cd_ind_wing,
+            cd_ind_htp,
+            cd_delta_e,
             error,
         )
 
@@ -414,6 +430,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.delta_e_sol = delta_e
         self.cd_aircraft_sol = cd
 
+        self.cd0 = cd0
+        self.cd0_flaps = cd0_flaps
+        self.cd_ind_wing = coeff_k_wing * cl_wing ** 2
+        self.cd_ind_htp = coeff_k_htp * cl_htp ** 2
+        self.cd_delta_e = (cd_elevator_delta * delta_e ** 2.0)
+
         return np.array([f1, f2])
 
     def compute_flight_point_drag(
@@ -456,6 +478,13 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 flight_point.CL_wing = float(equilibrium_result[2])
                 flight_point.CL_htp = float(equilibrium_result[3])
                 flight_point.CL = float(equilibrium_result[2] + equilibrium_result[3])
+
+                flight_point.CD_tot = float(equilibrium_result[5])
+                flight_point.CD0 = float(equilibrium_result[6])
+                flight_point.CD0_flaps = float(equilibrium_result[7])
+                flight_point.CD_ind_wing = float(equilibrium_result[8])
+                flight_point.CD_ind_htp = float(equilibrium_result[9])
+                flight_point.cd_delta_e = float(equilibrium_result[10])
 
             self.flight_points.append(deepcopy(flight_point))
 

@@ -24,18 +24,12 @@ from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AI
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
-
-
 _LOGGER = logging.getLogger(__name__)
 
 INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.openVSP", domain=ModelDomain.AERODYNAMICS)
 class ComputeAEROopenvsp(Group):
-
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)

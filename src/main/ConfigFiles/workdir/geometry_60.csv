@@ -1,0 +1,11 @@
+,0
+sweep25_wing,2.0
+taper_ratio_wing,0.925624
+aspect_ratio_wing,15.095675
+dihedral_angle_wing,0.0
+twist_angle_wing,0.0
+sweep25_htp,10.0
+taper_ratio_htp,0.348354
+aspect_ratio_htp,5.040128
+mach,0.115
+area_ratio,0.418264
