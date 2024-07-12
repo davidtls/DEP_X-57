@@ -19,18 +19,19 @@ from fastoad.module_management.constants import ModelDomain
 
 from .components import (
     ComputeBatteries,
-    ComputeElectricMotor,
+    ComputeElectricMotor_PA,
     ComputeHex,
     ComputeInverter,
     ComputeIntakes,
     ComputeCores,
 )
 
-@RegisterOpenMDAOSystem("fastga.electric_powertrain.legacy", domain=ModelDomain.GEOMETRY)
+
+@RegisterOpenMDAOSystem("fastga.electric_powertrain_PA.legacy", domain=ModelDomain.GEOMETRY)
 class ComputeElectricPowertrain(om.Group):
 
     def setup(self):
-        self.add_subsystem("compute_electric_motor", ComputeElectricMotor(), promotes=["*"])
+        self.add_subsystem("compute_electric_motor", ComputeElectricMotor_PA(), promotes=["*"])
         self.add_subsystem("compute_inverter", ComputeInverter(), promotes=["*"])
         self.add_subsystem("compute_cores", ComputeCores(), promotes=["*"])
         self.add_subsystem("compute_batteries", ComputeBatteries(), promotes=["*"])

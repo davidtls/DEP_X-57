@@ -18,8 +18,8 @@ import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+from fastga.models.aerodynamics.aerodynamics_high_speed_PA import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed_PA import AerodynamicsLowSpeed
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)

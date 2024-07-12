@@ -44,13 +44,19 @@ POINTS_NB_DESCENT = 50
 MAX_CALCULATION_TIME = 15  # time in seconds
 POINTS_POWER_COUNT = 200
 
-_LOGGER = logging.getLogger(__name__) 
+_LOGGER = logging.getLogger(__name__)
 
 HE_MISSION_FIELDS = {
-    'battery_power': {'name':'battery_power','unit':'W'},
-    "motor_input_power": {'name':'motor_input_power','unit':'W'},
-    "powertrain_power_input": {'name':'powertrain_power_input','unit':'W'},
-    "l_d_ratio": {'name':'l_d_ratio','unit':''},
+    'battery_power': {'name': 'battery_power', 'unit': 'W'},
+    "motor_input_power": {'name': 'motor_input_power', 'unit': 'W'},
+    "powertrain_power_input": {'name': 'powertrain_power_input', 'unit': 'W'},
+    "l_d_ratio": {'name': 'l_d_ratio', 'unit': ''},
+    "CD_tot": {'name': 'CD_tot', 'unit': ''},
+    "CD0": {'name': 'CD0', 'unit': ''},
+    "CD0_flaps": {'name': 'CD0_flaps', 'unit': ''},
+    "CD_ind_wing": {'name': 'CD_ind_wing', 'unit': ''},
+    "CD_ind_htp": {'name': 'CD_ind_htp', 'unit': ''},
+    "cd_delta_e": {'name': 'cd_delta_e', 'unit': ''},
 }
 
 # Extending FlightPoint dataclass with hybride electric fields
@@ -546,15 +552,13 @@ class _compute_climb(DynamicEquilibrium):
 
             climb_time.append(time_t / 3600)
 
-            # Check calculation duration
-            """
-            if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception(
-                    "Time calculation duration for climb phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
-                )
-            """
+            # # Check calculation duration
+            # if (time.time() - t_start) > MAX_CALCULATION_TIME:
+            #     raise Exception(
+            #         "Time calculation duration for climb phase [{}s] exceeded!".format(
+            #             MAX_CALCULATION_TIME
+            #         )
+            #     )
 
         # Add additional zeros in the power array to meet the plot requirements during post-processing
         while len(battery_power_climb_array) < POINTS_POWER_COUNT:
@@ -847,16 +851,15 @@ class _compute_descent(DynamicEquilibrium):
             bat_energy_descent += propulsion_model.get_consumed_energy(flight_point, offtakes, time_step / 3600) / 1000  # [kWh]
 
             # Time step is divided by 3600 to compute the energy in kWh
-            time_t += time_step
             descent_time_vec.append(time_t / 3600)
 
-            # Check calculation duration
-            if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception(
-                    "Time calculation duration for descent phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
-                )
+            # # Check calculation duration
+            # if (time.time() - t_start) > MAX_CALCULATION_TIME:
+            #     raise Exception(
+            #         "Time calculation duration for descent phase [{}s] exceeded!".format(
+            #             MAX_CALCULATION_TIME
+            #         )
+            #     )
 
         current_descent = max(descent_current_vec)
 

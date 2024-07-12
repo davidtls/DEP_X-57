@@ -39,7 +39,7 @@ POINTS_POWER_COUNT = 200
 
 _LOGGER = logging.getLogger(__name__)
 
-@RegisterOpenMDAOSystem("fastga.performances.mission.takeoff_HE", domain=ModelDomain.PERFORMANCE)
+@RegisterOpenMDAOSystem("fastga.performances.mission.takeoff_E", domain=ModelDomain.PERFORMANCE)
 class TakeOffPhase(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

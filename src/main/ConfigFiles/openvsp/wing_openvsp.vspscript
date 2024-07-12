@@ -15,15 +15,15 @@ void main()
    SetParmVal( GetParm(wid, "Tess_W", "Shape"), 52 );
    SetParmVal( GetParm(wid, "LECluster", "WingGeom"), 0.7 );
    SetParmVal( GetParm(wid, "TECluster", "WingGeom"), 0.9 );
-   SetParmVal( GetParm(wid, "X_Rel_Location", "XForm"), 2.6649 );
-   SetParmVal( GetParm(wid, "Z_Rel_Location", "XForm"), 0.6188 );
+   SetParmVal( GetParm(wid, "X_Rel_Location", "XForm"), 3.1358 );
+   SetParmVal( GetParm(wid, "Z_Rel_Location", "XForm"), 0.5775 );
    Update();
    
    //===== Define wing 1st Section ====//
    
    SetParmVal( GetParm(wid, "Span", "XSec_1"), 0.5989 );
-   SetParmVal( GetParm(wid, "Root_Chord", "XSec_1"), 0.6738 );
-   SetParmVal( GetParm(wid, "Tip_Chord", "XSec_1"), 0.6738 );
+   SetParmVal( GetParm(wid, "Root_Chord", "XSec_1"), 1.2279 );
+   SetParmVal( GetParm(wid, "Tip_Chord", "XSec_1"), 1.2279 );
    SetParmVal( GetParm(wid, "Sweep", "XSec_1"), 0.0 );
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_1"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_1"), 0 );
@@ -35,10 +35,10 @@ void main()
    
    //===== Define wing 2nd Section ====//
    
-   SetParmVal( GetParm(wid, "Span", "XSec_2"), 4.2432 );
-   SetParmVal( GetParm(wid, "Root_Chord", "XSec_2"), 0.6738 );
-   SetParmVal( GetParm(wid, "Tip_Chord", "XSec_2"), 0.1824 );
-   SetParmVal( GetParm(wid, "Sweep", "XSec_2"), 3.655 );
+   SetParmVal( GetParm(wid, "Span", "XSec_2"), 4.0862 );
+   SetParmVal( GetParm(wid, "Root_Chord", "XSec_2"), 1.2279 );
+   SetParmVal( GetParm(wid, "Tip_Chord", "XSec_2"), 0.8595 );
+   SetParmVal( GetParm(wid, "Sweep", "XSec_2"), 3.2885 );
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_2"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_2"), 0 );
    SetParmVal( GetParm(wid, "SectTess_U", "XSec_2"), 42 );

@@ -30,13 +30,13 @@ from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
 
-from .constants import SUBMODEL_HT_AREA
+from .constants import SUBMODEL_HT_AREA_PA
 
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
+    SUBMODEL_HT_AREA_PA, "fastga.submodel.handling_qualities.horizontal_tail.area_PA.legacy"
 )
 class UpdateHTArea(om.Group):
     """

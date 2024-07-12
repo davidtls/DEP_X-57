@@ -16,6 +16,7 @@
 from .compute_batteries import ComputeBatteries
 from .compute_cores import ComputeCores
 from .compute_electric_motor import ComputeElectricMotor
+from .compute_electric_motor_PA import ComputeElectricMotor_PA
 from .compute_hex import ComputeHex
 from .compute_inverter import ComputeInverter
 from .compute_intakes import ComputeIntakes

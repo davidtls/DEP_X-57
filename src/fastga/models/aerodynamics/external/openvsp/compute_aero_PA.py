@@ -20,7 +20,7 @@ import logging
 import numpy as np
 from openmdao.core.group import Group
 
-from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
+from .openvsp_PA import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 

@@ -32,9 +32,9 @@ from .constants import SUBMODEL_HT_AREA
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
-# @oad.RegisterSubmodel(
-#     SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
-# )
+@oad.RegisterSubmodel(
+    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
+)
 class UpdateHTArea(om.Group):
     """
     Computes needed ht area to:
@@ -170,9 +170,9 @@ class HTPConstraints(om.ExplicitComponent):
         vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
         # Rotation speed requirement from FAR 23.51 (depends on number of engines)
         if n_engines == 1:
-            v_r = vs0 * 1.0
+            v_r = vs1 * 1.0
         else:
-            v_r = vs0 * 1.1
+            v_r = vs1 * 1.1
         # Definition of max forward gravity center position
         x_cg = x_cg_aft - cg_range * wing_mac
         # Definition of horizontal tail global position
@@ -190,7 +190,7 @@ class HTPConstraints(om.ExplicitComponent):
             (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
         )  # FIXME: not clear if vs0 or vs1 should be used in formula
         # Compute aerodynamic coefficients for takeoff @ 0° aircraft angle
-        cl0_takeoff = cl0_clean + cl_flaps_takeoff  #fixme
+        cl0_takeoff = cl0_clean + cl_flaps_takeoff
         # Calculation of correction coefficient n_h and n_q
         n_h = (
             (x_ht - x_lg) / lp_ht * tail_efficiency_factor
@@ -265,7 +265,7 @@ class HTPConstraints(om.ExplicitComponent):
             (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
         )  # FIXME: not clear if vs0 or vs1 should be used in formula
         # Evaluate aircraft overall angle (aoa)
-        cl0_landing = cl0_clean + cl_flaps_landing  # fixme
+        cl0_landing = cl0_clean + cl_flaps_landing
         # Calculation of correction coefficient n_h and n_q
         n_h = (
             (x_ht - x_lg) / lp_ht * tail_efficiency_factor
@@ -360,7 +360,6 @@ class _UpdateArea(HTPConstraints):
             outputs["data:geometry:horizontal_tail:area"] = 1.0
         else:
             outputs["data:geometry:horizontal_tail:area"] = max(area_1, area_2)
-
 
 
 class _ComputeHTPAreaConstraints(HTPConstraints):

@@ -24,17 +24,17 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
 
-# oad.RegisterSubmodel.active_models[
-#     SUBMODEL_WING_AREA_AERO_LOOP
-# ] = "fastga.submodel.loop.wing_area.update.aero.simple"
-# oad.RegisterSubmodel.active_models[
-#     SUBMODEL_WING_AREA_AERO_CONS
-# ] = "fastga.submodel.loop.wing_area.constraint.aero.simple"
-#
-#
-# @oad.RegisterSubmodel(
-#     SUBMODEL_WING_AREA_AERO_LOOP, "fastga.submodel.loop.wing_area.update.aero.simple"
-# )
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_WING_AREA_AERO_LOOP
+] = "fastga.submodel.loop.wing_area.update.aero.simple"
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_WING_AREA_AERO_CONS
+] = "fastga.submodel.loop.wing_area.constraint.aero.simple"
+
+
+@oad.RegisterSubmodel(
+    SUBMODEL_WING_AREA_AERO_LOOP, "fastga.submodel.loop.wing_area.update.aero.simple"
+)
 class UpdateWingAreaLiftSimple(om.ExplicitComponent):
     """
     Computes needed wing area to have enough lift at required approach speed.
@@ -87,9 +87,9 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
         )
 
 
-# @oad.RegisterSubmodel(
-#     SUBMODEL_WING_AREA_AERO_CONS, "fastga.submodel.loop.wing_area.constraint.aero.simple"
-# )
+@oad.RegisterSubmodel(
+    SUBMODEL_WING_AREA_AERO_CONS, "fastga.submodel.loop.wing_area.constraint.aero.simple"
+)
 class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
     """
     Computes the difference between the lift coefficient required for the low speed conditions

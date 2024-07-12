@@ -24,7 +24,7 @@ import fastoad.api as oad
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
-from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
+from .openvsp_PA import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
 

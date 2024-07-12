@@ -26,8 +26,8 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
-from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+from fastga.models.aerodynamics.aerodynamics_high_speed_PA import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed_PA import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
     ComputeAircraftMaxCl,
     ComputeUnitReynolds,

@@ -18,7 +18,7 @@ import numpy as np
 from stdatm import AtmosphereSI
 
 
-class ComputeElectricMotor(om.ExplicitComponent):
+class ComputeElectricMotor_PA(om.ExplicitComponent):
     """
     Sizing of the electric motor is based on the work of Karan Kini K in FAST-GA-Elec in ComputeElectricMotor.
     This discipline computes the length, diameter, mass and power loss coefficients (alpha and beta) of the motor

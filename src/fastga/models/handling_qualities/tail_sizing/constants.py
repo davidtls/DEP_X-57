@@ -14,3 +14,4 @@
 
 SUBMODEL_HT_AREA = "submodel.handling_qualities.horizontal_tail.area"
 SUBMODEL_VT_AREA = "submodel.handling_qualities.vertical_tail.area"
+SUBMODEL_HT_AREA_PA = "submodel.handling_qualities.horizontal_tail.area_PA"
