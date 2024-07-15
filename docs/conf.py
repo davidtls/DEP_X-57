@@ -95,7 +95,7 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "api/*.tests.*",
-    "api/*.resources.rst",
+    "api/*.resources_PA.rst",
     "api/fastga.notebooks.*rst",
 ]
 

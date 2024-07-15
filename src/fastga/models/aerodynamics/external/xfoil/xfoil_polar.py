@@ -82,7 +82,7 @@ class XfoilPolar(ExternalCodeComp):
             default=False,
             types=bool,
             desc="If only one angle of attack is required, Cl_max_2D and Cl_min_2D won't be "
-            "returned and results won't be written in the resources nor will they be read from "
+            "returned and results won't be written in the resources_PA nor will they be read from "
             "them. In addition to that, options "
             + OPTION_ALPHA_END
             + " and "
