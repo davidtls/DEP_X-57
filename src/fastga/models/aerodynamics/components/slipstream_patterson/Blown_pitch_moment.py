@@ -25,7 +25,7 @@ class AircraftBlownPitchMoment:
     Based on: OBERT, E.  "The effect of propeller slipstream on the static longitudinal stability and control
     of multi-engined propeller aircraft"
 
-    Computes several special magnitudes:
+    Computes several magnitudes:
 
           * VarVtoV : Ratio between the augmentation of speed in the slipstream and free stream velocity. (The speed
                       in the slipstream is (V + VarV), so we do (V + VarV)/V )
@@ -146,7 +146,7 @@ class AircraftBlownPitchMoment:
         VarCLsalpha = WingBlownLift.compute_cl_cd_blown(inputs, thrust, alpha, q, flap_condition, low_speed)[0]\
                       - (cl_alpha_wing * alpha + cl0_wing + cl_wing_flaps)
 
-        # FIXME: Computing the lift in the tail and contribution to pitch moment
+        # Computing the lift in the tail and contribution to pitch moment
         x_offset = inputs["data:geometry:propulsion:nacelle:length"] / 2
 
         FlChord = inputs["data:geometry:flap:chord_ratio"]
@@ -172,7 +172,7 @@ class AircraftBlownPitchMoment:
         lh = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         # Horizontal distance from the wing trailing edge to the horizontal tail leading edge
         lh2 = lh + 0.25 * inputs["data:geometry:wing:MAC:length"]\
-              - 0.25 * inputs["data:geometry:horizontal_tail:MAC:length"]
+            - 0.25 * inputs["data:geometry:horizontal_tail:MAC:length"]
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]  # X position from tip of MAC of wing
         # Distance from center of gravity to HTP center of pressure
         lv = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] + (x_wing - x_cg)
@@ -197,8 +197,7 @@ class AircraftBlownPitchMoment:
             + FlChord * c * np.sin(FlapDefl) + 0.25 * (x_offset + 0.25 * c) * np.sin(alpha0_fl)
 
         # alpha0_fl is the change of alpha_0 for unitary deflection of flap. In °/° = rad/rad
-        # If you want radians, it is necessary to multiply by flaps deflection, in radians.
-        # FlapDefl is in radians
+        # For radians, multiply by flaps deflection in radians. FlapDefl is in radians
 
         if 2.5 > (h / (0.5 * D_s)) > -1:
             var_eps = -0.2263 * (h/(0.5*D_s)) ** 6 + 1.0584 * (h/(0.5*D_s)) ** 5 - 0.2971 * (h/(0.5*D_s)) ** 4\
@@ -211,7 +210,7 @@ class AircraftBlownPitchMoment:
             extra_eps = (var_eps * VarVtoV) * np.pi / 180
             eps = eps_noinflow + extra_eps
         else:
-            var_eps = 0
+            # var_eps = 0
             eps = eps_noinflow
 
         # Dynamic pressure ratio in the horizontal tail
@@ -228,11 +227,11 @@ class AircraftBlownPitchMoment:
         # Tail moment
         Cm_tail = -CL_tail * lv/c
 
-        # FIXME: Computing the tail-off pitch moment
+        # Computing the tail-off pitch moment
         cm_alpha_fus = inputs["data:aerodynamics:fuselage:cm_alpha"]
         lemac = inputs["data:geometry:wing:MAC:leading_edge:x:absolute"]
         # Zero lift pitch moment of the wing section (airfoil) at the propeller axis location.
-        # From the xlfr5 file, alpha = 0°. Assumed 0
+        # From xlfr5 file, alpha = 0°. Assumed 0
         cm_0_s = 0.0
 
         # Computes augmented chord when flaps are deflected, by Pithagoras
@@ -248,18 +247,16 @@ class AircraftBlownPitchMoment:
         # 2nd contribution. Change in pitching moment when deploying flaps
         Cm3 = (c_flaps/c)*(-0.25 + 0.32 * (FlChord*c / c_flaps)) * (1+0.2*(1-np.sqrt(2) * np.sin(FlapDefl))) * VarCLs0
 
-        Var_xac_fus = -0.25
+        Cm4 = -0.25 * (c_flaps/c - 1) * VarCLsalpha
 
-        Cm5 = -0.25 * (c_flaps/c - 1) * VarCLsalpha
-
-        Cm6 = -(0.05 + 0.5 * (c_flaps/c - 1)) * VarCLsalpha
+        Cm5 = -(0.05 + 0.5 * (c_flaps/c - 1)) * VarCLsalpha
 
         # To take the moments in the centre of gravity, not in the aerodynamic point
         # Passing pitch moment due to wing+fuselage lift from aero center (lemac + 0.25*c) to center of gravity (x_cg)
         # We just need to account for the extra wing lift due to slipstream
-        Cm7 = - VarCLsalpha * (lemac + 0.25*c - x_cg)/c
+        Cm6 = - VarCLsalpha * (lemac + 0.25*c - x_cg)/c
 
-        Cm_tail_off = Cm1 + Cm2 + Cm3 + Cm5 + Cm6 + Cm7
+        Cm_tail_off = Cm1 + Cm2 + Cm3 + Cm4 + Cm5 + Cm6
 
         Cm = Cm_tail_off + Cm_tail
 
