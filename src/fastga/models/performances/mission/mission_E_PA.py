@@ -399,12 +399,6 @@ class _compute_climb(DynamicEquilibrium_E_PA):
         self.add_input("data:mission:sizing:taxi_out:battery_energy", np.nan, units="kW*h")
         self.add_input("data:mission:sizing:takeoff:battery_energy", np.nan, units="kW*h")
         self.add_input("data:mission:sizing:initial_climb:battery_energy", np.nan, units="kW*h")
-        self.add_input(
-            "data:mission:sizing:main_route:climb:climb_rate:sea_level", val=np.nan, units="m/s"
-        )
-        self.add_input(
-            "data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s"
-        )
         self.add_input("data:mission:sizing:main_route:climb:climb_thrust_rate", val=1.0)
 
         self.add_input("data:aerodynamics:wing:clean:CL_max_blown", np.nan)
@@ -443,8 +437,6 @@ class _compute_climb(DynamicEquilibrium_E_PA):
         cl_max_clean = inputs["data:aerodynamics:wing:clean:CL_max_blown"]
         wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
-        climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
-        climb_rate_cl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"])
         system_voltage = inputs["data:propulsion:electric_powertrain:battery:sys_nom_voltage"]
         offtakes = inputs["data:mission:sizing:main_route:climb:offtakes"]
         thrust_rate = inputs["data:mission:sizing:main_route:climb:climb_thrust_rate"]
@@ -486,7 +478,6 @@ class _compute_climb(DynamicEquilibrium_E_PA):
         time_step = 4.0  # in original is ~3.96
 
         # Climb rate interpolation
-        climb_rate_interp = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])
         while altitude_t < cruise_altitude:
 
             flight_point = FlightPoint(altitude=altitude_t,
@@ -511,13 +502,11 @@ class _compute_climb(DynamicEquilibrium_E_PA):
             v_tas = atm.true_airspeed
             atm_1 = AtmosphereSI(altitude_t + 1.0)
             atm_1.calibrated_airspeed = v_cas
-            dv_tas_dh = atm_1.true_airspeed - v_tas
-            dvx_dt = dv_tas_dh * v_tas * math.sin(flight_point.gamma)
             q = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium_climb(
-                inputs, flight_point.thrust, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:5]
+                inputs, flight_point.thrust, q, mass_t, "none", previous_step[0:5]
             )
             flight_point.gamma = float(previous_step[1])
 
@@ -559,14 +548,6 @@ class _compute_climb(DynamicEquilibrium_E_PA):
             bat_energy_climb += propulsion_model.get_consumed_energy(flight_point, offtakes, time_step / 3600) / 1000
 
             climb_time.append(time_t / 3600)
-
-            # # Check calculation duration
-            # if (time.time() - t_start) > MAX_CALCULATION_TIME:
-            #    raise Exception(
-            #        "Time calculation duration for climb phase [{}s] exceeded!".format(
-            #            MAX_CALCULATION_TIME
-            #        )
-            #    )
 
         # Calculate the climb gradient
         outputs["data:mission:sizing:main_route:climb:gradient_rad"] = np.arctan(cruise_altitude / distance_t)
