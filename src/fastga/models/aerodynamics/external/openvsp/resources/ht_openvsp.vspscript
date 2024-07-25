@@ -12,7 +12,7 @@ void main()
    //===== Define wing globale dimensions =====//
    
    InsertXSec( wid, 0, XS_FILE_AIRFOIL );
-   SetParmVal( GetParm(wid, "Tess_W", "Shape"), 31 );
+   SetParmVal( GetParm(wid, "Tess_W", "Shape"), 10 );
    SetParmVal( GetParm(wid, "LECluster", "WingGeom"), 0.7 );
    SetParmVal( GetParm(wid, "TECluster", "WingGeom"), 0.9 );
    SetParmVal( GetParm(wid, "X_Rel_Location", "XForm"), x_htp );
