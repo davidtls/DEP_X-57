@@ -13,10 +13,10 @@ OUTPUT_FOLDER_PATH = "OutputFiles"
 
 # Define files
 # TODO Option 1: Configuration file for running MDA or MDAO with interaction:
-CONFIGURATION_FILE = pth.join(CONFIG_FOLDER_PATH, "oad_process_X57_interaction.yml")
+# CONFIGURATION_FILE = pth.join(CONFIG_FOLDER_PATH, "oad_process_X57_interaction.yml")
 
 # TODO Option 2: Configuration file for running MDA or MDAO WITHOUT interaction:
-# CONFIGURATION_FILE = pth.join(CONFIG_FOLDER_PATH, "oad_process_X57_baseline.yml")
+CONFIGURATION_FILE = pth.join(CONFIG_FOLDER_PATH, "oad_process_X57_baseline.yml")
 # Intructions to use this file:
 
 SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "x57_mission.xml")
