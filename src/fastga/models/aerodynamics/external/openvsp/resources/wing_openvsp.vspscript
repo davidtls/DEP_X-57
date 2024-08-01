@@ -12,7 +12,7 @@ void main()
    //===== Define wing globale dimensions =====//
    
    InsertXSec( wid, 1, XS_FILE_AIRFOIL );
-   SetParmVal( GetParm(wid, "Tess_W", "Shape"), 41 );
+   SetParmVal( GetParm(wid, "Tess_W", "Shape"), 52 );
    SetParmVal( GetParm(wid, "LECluster", "WingGeom"), 0.7 );
    SetParmVal( GetParm(wid, "TECluster", "WingGeom"), 0.9 );
    SetParmVal( GetParm(wid, "X_Rel_Location", "XForm"), x_wing );
@@ -27,7 +27,7 @@ void main()
    SetParmVal( GetParm(wid, "Sweep", "XSec_1"), 0.0 );
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_1"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_1"), 0 );
-   SetParmVal( GetParm(wid, "SectTess_U", "XSec_1"), 8 );
+   SetParmVal( GetParm(wid, "SectTess_U", "XSec_1"), 10 );
    SetParmVal( GetParm(wid, "Twist", "XSec_1"), 0 );
    SetParmVal( GetParm(wid, "Twist_Location", "XSec_1"), 0.25 );
    SetParmVal( GetParm(wid, "Dihedral", "XSec_1"), 0 );
@@ -41,7 +41,7 @@ void main()
    SetParmVal( GetParm(wid, "Sweep", "XSec_2"), sweep_0_wing );
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_2"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_2"), 0 );
-   SetParmVal( GetParm(wid, "SectTess_U", "XSec_2"), 33 );
+   SetParmVal( GetParm(wid, "SectTess_U", "XSec_2"), 42 );
    SetParmVal( GetParm(wid, "OutCluster", "XSec_2"), 0.9 );
    SetParmVal( GetParm(wid, "Twist", "XSec_2"), twist );
    SetParmVal( GetParm(wid, "Twist_Location", "XSec_2"), 0.25 );
