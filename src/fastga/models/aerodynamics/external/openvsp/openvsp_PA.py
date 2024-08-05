@@ -31,7 +31,7 @@ from stdatm import Atmosphere
 from fastga.command.api import _create_tmp_directory
 from fastga.utils.resource_management.copy import copy_resource_from_path
 from . import openvsp3201
-from . import resources_PA as local_resources
+from . import resources as local_resources
 from ... import airfoil_folder
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 

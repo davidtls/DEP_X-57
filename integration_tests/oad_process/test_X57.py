@@ -42,6 +42,8 @@ def cleanup():
     """Empties results folder to avoid any conflicts."""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     rmtree("D:/tmp", ignore_errors=True)
+    rmtree(pth.join(DATA_FOLDER_PATH, "openvsp"), ignore_errors=True)
+    rmtree(pth.join(DATA_FOLDER_PATH, "workdir"), ignore_errors=True)
 
 
 def test_oad_process_x57_interaction(cleanup):
@@ -119,9 +121,9 @@ def test_oad_process_x57_baseline(cleanup):
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 1.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.0513, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1674.59, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1674.6, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1353.59, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1353.6, atol=1)
 
 
 def _check_weight_performance_loop(problem):

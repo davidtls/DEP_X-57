@@ -44,8 +44,6 @@ class CLmaxBlownLowspeed(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
-        # self.add_input("data:mission:sizing:landing:flap_angle", val=30.0, units="deg")
-
         # Wing_Blown_lift inputs
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
@@ -55,18 +53,17 @@ class CLmaxBlownLowspeed(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:airfoil:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:flaps:landing:CL_2D", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL_2D", val=np.nan)
-        # self.add_input("data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan)
 
         self.add_input("data:aerodynamics:wing:low_speed:CL_vector", val=np.nan, shape=SPAN_MESH_POINT)
         self.add_input("data:aerodynamics:wing:low_speed:CL_vector_0_degree", val=np.nan, shape=SPAN_MESH_POINT)
         self.add_input("data:aerodynamics:wing:low_speed:Y_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:chord_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:area_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m**2")
+        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
 
         self.add_output("data:aerodynamics:wing:landing:CL_max_blown")
         self.add_output("data:aerodynamics:wing:takeoff:CL_max_blown")
         self.add_output("data:aerodynamics:wing:clean:CL_max_blown")
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
 
         self.declare_partials("*", "*", method="fd")
 
