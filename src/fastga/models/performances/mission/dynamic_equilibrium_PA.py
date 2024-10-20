@@ -26,7 +26,7 @@ import pandas as pd
 import fastoad.api as oad
 
 from fastga.models.aerodynamics.components.slipstream_patterson.Blown_lift import WingBlownLift
-from fastga.models.aerodynamics.components.slipstream_patterson.Blown_pitch_moment import AircraftBlownPitchMoment
+from fastga.models.aerodynamics.components.slipstream_patterson.Tail_on_pitch_moment import AircraftPitchMoment
 from src.fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 
 from stdatm import Atmosphere
@@ -149,29 +149,15 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:airfoil:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:flaps:landing:CL_2D", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL_2D", val=np.nan)
-        #self.add_input("data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan)
-
         self.add_input("data:aerodynamics:wing:cruise:CL_vector", val=np.nan, shape=SPAN_MESH_POINT)
         self.add_input("data:aerodynamics:wing:cruise:CL_vector_0_degree", val=np.nan, shape=SPAN_MESH_POINT)
         self.add_input("data:aerodynamics:wing:cruise:Y_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m")
         self.add_input("data:aerodynamics:wing:cruise:chord_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m")
         self.add_input("data:aerodynamics:wing:cruise:area_vector", val=np.nan, shape=SPAN_MESH_POINT, units="m**2")
 
-        # Blown_pitch_moment inputs
-        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:downwash_gradient", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:z", val=np.nan, units='m')
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:absolute", val=np.nan, units="m")
+        # Pitch_moment inputs
         self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_0_isolated", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
-        self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
 
     def dynamic_equilibrium_climb(
             self,
@@ -451,7 +437,7 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
         )
 
         # Method to compute pitch moment with blowing
-        Cm_blown, cl_htp_blown = AircraftBlownPitchMoment.compute_cm_blown(inputs, thrust, alpha, q, flap_condition, x_cg, delta_e, low_speed, cl_wing_blown)
+        Cma, cl_htp = AircraftPitchMoment.compute_cm(inputs, thrust, alpha, q, flap_condition, x_cg, delta_e, low_speed, cl_wing_blown)
 
         # Get drag with blowing
         cd_blown = (
@@ -465,12 +451,12 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
 
         # Rewriting the equilibrium equations
         f1 = float(-drag + thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma)) / (float(mass) / 10.0)
-        f2 = float(mass * g * np.cos(gamma) - thrust * np.sin(alpha - alpha_eng) - q * (cl_wing_blown + cl_htp_blown) * wing_area)\
+        f2 = float(mass * g * np.cos(gamma) - thrust * np.sin(alpha - alpha_eng) - q * (cl_wing_blown + cl_htp) * wing_area)\
             / (float(mass))
-        f3 = float(Cm_blown + delta_cm) / (1 / 10)
+        f3 = float(Cma + delta_cm) / (1 / 10)
 
         self.cl_wing_sol = cl_wing_blown
-        self.cl_tail_sol = cl_htp_blown
+        self.cl_tail_sol = cl_htp
         self.cd_aircraft_sol = cd_blown
 
         self.cd0 = cd0
@@ -646,27 +632,13 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
 
         if low_speed:
             if flap_condition == "takeoff":
-                cl_wing = 0.0
                 cd0_flaps = inputs["data:aerodynamics:flaps:takeoff:CD"]
             elif flap_condition == "landing":
-                cl_wing = 0.0
                 cd0_flaps = inputs["data:aerodynamics:flaps:landing:CD"]
             else:
-                cl_wing = 0.0
                 cd0_flaps = 0.0
         else:
-            cl_wing = 0.0
             cd0_flaps = 0.0
-
-        # Unblown calculus
-        cl_wing += cl0_wing + cl_alpha_wing * alpha
-
-        cl_htp = cl0_htp + alpha * cl_alpha_htp + cl_elevator_delta * delta_e
-
-        cma = cl_wing * (x_cg - x_wing) / l0_wing - cl_htp * (x_htp - x_cg) / l0_wing + cm0_wing \
-              + (cm_alpha_fus / cl_alpha_wing) * (cl_wing - cl0_wing)
-
-        cd = (cd0 + cd0_flaps + + coeff_k_wing * cl_wing ** 2 + coeff_k_htp * cl_htp ** 2 + (cd_elevator_delta * delta_e ** 2.0))
 
         # Blown calculus
         # Get cl_wing and cd if there is blowing onto the wing and slipstream effect
@@ -674,8 +646,8 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
             inputs, thrust, alpha, q, flap_condition, low_speed
         )
 
-        # Method to compute pitch moment with blowing
-        Cm_blown, cl_htp_blown = AircraftBlownPitchMoment.compute_cm_blown(inputs, thrust, alpha, q, flap_condition, x_cg, delta_e, low_speed, cl_wing_blown)
+        # Compute pitch moment
+        Cma, cl_htp = AircraftPitchMoment.compute_cm(inputs, thrust, alpha, q, flap_condition, x_cg, delta_e, low_speed, cl_wing_blown)
 
         # Get drag with blowing
         cd_blown = (
@@ -689,12 +661,12 @@ class DynamicEquilibrium_E_PA(om.ExplicitComponent):
 
         # Divide the results by characteristic number to have homogeneous responses
         f1 = float(-drag + thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma)) / (float(mass) / 10.0)
-        f2 = float(mass * g * np.cos(gamma) - thrust * np.sin(alpha - alpha_eng) - q * (cl_wing_blown + cl_htp_blown) * wing_area) \
+        f2 = float(mass * g * np.cos(gamma) - thrust * np.sin(alpha - alpha_eng) - q * (cl_wing_blown + cl_htp) * wing_area) \
             / (float(mass))
-        f3 = float(Cm_blown + delta_cm) / (1 / 10)
+        f3 = float(Cma + delta_cm) / (1 / 10)
 
         self.cl_wing_sol = cl_wing_blown
-        self.cl_tail_sol = cl_htp_blown
+        self.cl_tail_sol = cl_htp
         self.cd_aircraft_sol = cd_blown
 
         self.cd0 = cd0

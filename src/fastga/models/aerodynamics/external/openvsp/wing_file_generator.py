@@ -1,7 +1,7 @@
 
 """
 When calling vspscript.exe to execute wing_openvsp.vspscript and generate  wing_openvsp_DegenGeom.csv an error is
-sometimes risen, stoping the optim without graceful way to recover. As re-directed from the batch file it is related to
+sometimes risen, stopping the optim without graceful way to recover. As re-directed from the batch file it is related to
 OpenVSP:
 
 VSPAERO viewer not found.
@@ -67,7 +67,7 @@ class WingFileModifying:
         # Takes the number and modifies it by adding 10 ** number of decimals
         new_value = round(float(float(string) + self._count * (10 ** -(int(number_decimals)))), number_decimals)
 
-        # Copies self._data in filedata_lines and eplace the new value
+        # Copies self._data in filedata_lines and replace the new value
         filedata_lines = self._data
         filedata_lines[line] = filedata_lines[line].replace(string, str(new_value))
 

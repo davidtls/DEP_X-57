@@ -84,73 +84,54 @@ optimization: # This section is needed only if optimization process is run
    design_variables:
      - name: data:mission:sizing:max_motor_shaft_power_to_weight
        lower: 8.0
-       upper: 9.0
+       upper: 10.0
        ref0: 8.0
-       ref: 9.0
-     - name: data:geometry:flap:chord_ratio
-       lower: 0.1
-       upper: 0.4
-       ref0: 0.1
-       ref: 0.4
-     - name: data:geometry:flap:span_ratio
-       lower: 0.7
-       upper: 0.9
-       ref0: 0.7
-       ref: 0.9
-     - name: data:geometry:propeller:blade_pitch_angle
-       lower: 25.0
-       upper: 40.0
-       ref0: 25.0
-       ref: 40.0
+       ref: 10.0
      - name: data:geometry:propeller:diameter
-       lower: 0.6
+       lower: 0.55
        upper: 0.75
-       ref0: 0.6
+       ref0: 0.55
        ref: 0.75
      - name: data:geometry:wing:taper_ratio
-       lower: 0.2
-       upper: 0.2
-       ref0: 0.2
-       ref: 0.4
+       lower: 0.5
+       upper: 1.0
+       ref0: 0.5
+       ref: 1.0
      - name: data:geometry:wing:aspect_ratio
-       lower: 17.0
-       upper: 19.0
-       ref0: 17.0
-       ref: 19.0
+       lower: 12.0
+       upper: 20.0
+       ref0: 12.0
+       ref: 20.0
      - name: data:geometry:horizontal_tail:taper_ratio
-       lower: 0.6
-       upper: 0.9
-       ref0: 0.6
-       ref: 0.9
+       lower: 0.2
+       upper: 1.0
+       ref0: 0.2
+       ref: 1.0
      - name: data:geometry:horizontal_tail:aspect_ratio
-       lower: 5.5
+       lower: 2.0
        upper: 6.5
-       ref0: 5.5
+       ref0: 2.0
        ref: 6.5
      - name: data:geometry:wing:area
        lower: 7.0
-       upper: 8
+       upper: 10.0
        ref0: 7.0
-       ref: 8.0
+       ref: 10.0
 
 
    constraints:
      - name: data:mission:sizing:takeoff:TOFL
-       upper: 727                        # 726
+       upper: 727
        ref0: 500
        ref: 1000
      - name: data:geometry:wing:span
-       upper: 12.0  # around 12
+       upper: 11.43
        ref0: 10
        ref: 12
      - name: data:mission:sizing:main_route:climb:duration # the one in original mission
        upper: 420.0
        ref0: 300
        ref: 500
-#     - name: data:mission:sizing:main_route:climb:gradient_rad # in original mission it was around 5 degrees
-#       lower: 0.09229 # 5.28 degree
-#       ref0: 0.0349
-#       ref: 0.104719
      - name: data:constraints:wing:additional_CL_capacity
        lower: 0.0
      - name: data:geometry:propeller:available_space_propellers

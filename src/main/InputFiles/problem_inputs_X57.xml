@@ -31,14 +31,14 @@
         </seats>
       </cabin>
       <flap>
-        <chord_ratio is_input="True">0.4<!--mean value of (flap chord)/(section chord)--></chord_ratio>
-        <span_ratio is_input="True">0.8662839361177898<!--flap span as a percentage of the wing span--></span_ratio>
+        <chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.7<!--flap span as a percentage of the wing span--></span_ratio>
       </flap>
       <horizontal_tail>
-        <aspect_ratio is_input="True">6.448140232165529<!--horizontal tail aspect ratio--></aspect_ratio>
+        <aspect_ratio is_input="True">6.499999999999999<!--horizontal tail aspect ratio--></aspect_ratio>
         <elevator_chord_ratio is_input="True">0.3<!--elevator chord ratio--></elevator_chord_ratio>
         <sweep_25 units="deg" is_input="True">10.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
-        <taper_ratio is_input="True">0.7006701565042941<!--taper ratio of horizontal tail--></taper_ratio>
+        <taper_ratio is_input="True">0.6168398609570702<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
         <MAC>
           <at25percent>
@@ -52,10 +52,10 @@
         <type is_input="True">1.0<!--0=non-retractable / 1=retractable--></type>
       </landing_gear>
       <propeller>
-        <blade_pitch_angle units="deg" is_input="True">25.0</blade_pitch_angle>
+        <blade_pitch_angle units="deg" is_input="True">30.0</blade_pitch_angle>
         <blades_number is_input="True">3.0<!--number of blades on the propeller--></blades_number>
         <depth units="m" is_input="True">0.3<!--depth of the propeller--></depth>
-        <diameter units="m" is_input="True">0.6362442252266793<!--propeller diameter--></diameter>
+        <diameter units="m" is_input="True">0.6743699999999992<!--propeller diameter--></diameter>
         <type is_input="True">1.0<!--1.0:fix pitch propeller, 2.0:variable pitch propeller--></type>
       </propeller>
       <vertical_tail>
@@ -72,11 +72,11 @@
         </rudder>
       </vertical_tail>
       <wing>
-        <area units="m**2" is_input="True">7.307896992932215<!--wing area--></area>
-        <aspect_ratio is_input="True">18.454577583248337<!--wing aspect ratio--></aspect_ratio>
+        <area units="m**2" is_input="True">8.258436629795337<!--wing area--></area>
+        <aspect_ratio is_input="True">15.819105269216534<!--wing aspect ratio--></aspect_ratio>
         <dihedral units="rad" is_input="True">0.0</dihedral>
         <sweep_25 units="deg" is_input="True">2.0<!--sweep angle at 25% chord of wing--></sweep_25>
-        <taper_ratio is_input="True">0.20000000000000004<!--taper ratio of wing--></taper_ratio>
+        <taper_ratio is_input="True">0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--mean thickness ratio of wing--></thickness_ratio>
         <twist units="rad" is_input="True">0.0<!--Negative twist means tip AOA is smaller than root--></twist>
         <kink>
@@ -139,7 +139,7 @@
     <mission>
       <sizing>
         <fuel units="kg" is_input="True">1.0</fuel>
-        <max_motor_shaft_power_to_weight units="W/kg" is_input="True">8.0</max_motor_shaft_power_to_weight>
+        <max_motor_shaft_power_to_weight units="W/kg" is_input="True">8.374694208968629</max_motor_shaft_power_to_weight>
         <end_of_mission>
           <SOC is_input="True">0.05</SOC>
         </end_of_mission>

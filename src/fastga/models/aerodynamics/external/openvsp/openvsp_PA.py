@@ -762,17 +762,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[0])
             # Modify htp parameters
             parser.mark_anchor("x_htp")
-            parser.transfer_var(float(x_htp), 0, 5)
+            parser.transfer_var(round(float(x_htp), 4), 0, 5)
             parser.mark_anchor("z_htp")
-            parser.transfer_var(float(z_htp), 0, 5)
+            parser.transfer_var(round(float(z_htp), 4), 0, 5)
             parser.mark_anchor("semi_span_htp")
-            parser.transfer_var(float(semi_span_htp), 0, 5)
+            parser.transfer_var(round(float(semi_span_htp), 4), 0, 5)
             parser.mark_anchor("root_chord_htp")
-            parser.transfer_var(float(root_chord_htp), 0, 5)
+            parser.transfer_var(round(float(root_chord_htp), 4), 0, 5)
             parser.mark_anchor("tip_chord_htp")
-            parser.transfer_var(float(tip_chord_htp), 0, 5)
+            parser.transfer_var(round(float(tip_chord_htp), 4), 0, 5)
             parser.mark_anchor("sweep_25_htp")
-            parser.transfer_var(float(sweep_25_htp), 0, 5)
+            parser.transfer_var(round(float(sweep_25_htp), 4), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
@@ -786,7 +786,23 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         ############################################################################################
 
         self.options["external_output_files"] = output_file_list
-        super().compute(inputs, outputs)
+
+        replacement_file = WingFileModifying()
+        count = 0
+        initiate = False
+
+        while True:
+            try:
+                super().compute(inputs, outputs)
+                break
+            except:
+                if not initiate:
+                    # We just want to set the file once
+                    replacement_file.set_file(input_file_list[0])
+                    initiate = True
+                if count < 20:
+                    replacement_file.replace_values(17)
+                    count += 1
 
         # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
         ############################################################################################

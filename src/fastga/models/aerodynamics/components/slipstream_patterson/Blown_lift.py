@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import openmdao.api as om
 from src.fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 
 
@@ -51,7 +50,6 @@ class WingBlownLift:
             CL1 = inputs["data:aerodynamics:wing:low_speed:CL_vector_0_degree"]
             Area = inputs["data:aerodynamics:wing:low_speed:area_vector"]
             S = 2 * sum(inputs["data:aerodynamics:wing:low_speed:area_vector"])
-            # CL_max_airfoil = inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"]
             coeff_k_wing = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         else:
             LocalChord = inputs["data:aerodynamics:wing:cruise:chord_vector"]
@@ -60,7 +58,6 @@ class WingBlownLift:
             CL1 = inputs["data:aerodynamics:wing:cruise:CL_vector_0_degree"]
             Area = inputs["data:aerodynamics:wing:cruise:area_vector"]
             S = 2 * sum(inputs["data:aerodynamics:wing:cruise:area_vector"])
-            # CL_max_airfoil = inputs["data:aerodynamics:wing:cruise:tip:CL_max_2D"]
             coeff_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 
         Cl_alpha_vector = (CL2 - CL1) / (10 * np.pi / 180)
@@ -70,30 +67,36 @@ class WingBlownLift:
         FlRatio = inputs["data:geometry:flap:span_ratio"]
         Fus_width = inputs["data:geometry:fuselage:maximum_width"]
         FlPosi = Fus_width / (2 * b)
-        # Distance between propeller and wing LE is assumed to be half the length of the nacelle
+        # Distance between propeller and wing LE, assumed half of nacelle length
         x_offset = inputs["data:geometry:propulsion:nacelle:length"] / 2
 
-        alpha_i = 0  # "Wing tilt angle with respect to fuselage (that is the reference for aoa). [rad]"
+        alpha_i = 0  # Wing tilt angle with respect to fuselage [rad]
         ip = -0.0 * np.pi / 180  # Propeller installation angle, measured with airfoil zero lift line [rad]
         dfl = 1  # Flap deflection [rad], set to 1 since "...:flaps:landing:CL_2D" already accounts for deflection
 
-        alpha_max = 15 * np.pi / 180  # computed with airfoil analysis, airfoil is not varied
+        # airfoil
+        alpha0 = -1.325
+        alpha_stall = 17.0
+        alpha_max = (alpha_stall - alpha0) * np.pi / 180
+
         if flap_condition == "landing":
-            alpha0_fl = - inputs["data:aerodynamics:flaps:landing:CL_2D"]\
-                        / inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
+            alpha0_fl = -14.035 * np.pi / 180.0  # angles from airfoil analysis
             FlapCondition = True
-            alpha_max_fl = 10.2 * np.pi / 180   # computed with airfoil analysis, airfoil is not varied
+            alpha0fl = -15.27
+            alpha_stall_flap = 11
+            alpha_max_fl = (alpha_stall_flap - alpha0fl) * np.pi / 180
         elif flap_condition == "takeoff":
-            alpha0_fl = - inputs["data:aerodynamics:flaps:takeoff:CL_2D"]\
-                        / inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
+            alpha0_fl = -6.58 * np.pi / 180.0
             FlapCondition = True
-            alpha_max_fl = 11.5 * np.pi / 180    # computed with airfoil analysis, airfoil is not varied
+            alpha0fl = -7.815
+            alpha_stall_flap = 15
+            alpha_max_fl = (alpha_stall_flap - alpha0fl) * np.pi / 180
         else:
             alpha0_fl = 0.0
             FlapCondition = False
             alpha_max_fl = 0.0
 
-        Cd0_turbulent = 0.0053  # "float, Cd0 of the airfoil assuming turbulent flow over it"
+        Cd0_turbulent = 0.00935  # airfoil skin friction drag assuming turbulent flow
 
         # Definition of surrogate coefficients
         C0 = np.array([0.378269, 0.748135, -0.179986, -0.056464, -0.146746, -0.015255])
@@ -118,17 +121,16 @@ class WingBlownLift:
                 if np.real(roots[j]) > 0:
                     myw = np.real(roots[j])
 
-        mu = 2*myw
+        mu = 2*myw  # myw is speed in actuator disk, we want it downwash
 
-        if mu > 0.5:  # Patterson limits this value to ~ 1 but values over 0.5 ...
-            mu = 0.5  # ...provided unrealistic results as observed for the X-57 computational analysis
+        if mu > 0.5:  # higher leads to unrealistic estimations by surrogate model
+            mu = 0.5
 
         # Compute the different angles used
-        alpha_fl = aoa - alpha0_fl * dfl
         alpha_t = aoa - alpha0w + alpha_i
-        alpha_fl_t = alpha_fl - alpha0w + alpha_i
+        alpha_fl_t = aoa - alpha0_fl * dfl - alpha0w + alpha_i
         alpha_t_max = alpha_max * np.ones_like(alpha0w)
-        alpha_fl_t_max = alpha_max_fl * np.ones_like(alpha0w) - alpha0_fl * dfl + 1.15 * np.pi / 180
+        alpha_fl_t_max = alpha_max_fl * np.ones_like(alpha0w)
 
         # Determine if section is behind propeller and/or has flap
         lim_inf = yp - Dp/2
@@ -156,11 +158,11 @@ class WingBlownLift:
         # Compute alpha_ep, alpha_ep_drag, Cd0_vec, LmFl and LocalCl
         # alpha_ep
         alpha_ep = np.where((SectInProp & SectHasFlap),
-                            np.arctan((np.sin(alpha_fl_t) - mu*np.sin(ip + alpha0_fl * dfl))
-                                      / (np.cos(alpha_fl_t) + mu * np.cos(ip))), 0)
+                            np.arctan((np.sin(alpha_fl_t) - 0.5*mu*np.sin(ip + alpha0_fl * dfl))
+                                      / (np.cos(alpha_fl_t) + 0.5*mu * np.cos(ip))), 0)
         alpha_ep = np.where((SectInProp & (~SectHasFlap)),
-                            np.arctan((np.sin(alpha_t) - mu * np.sin(ip))
-                                      / (np.cos(alpha_t) + mu * np.cos(ip))), alpha_ep)
+                            np.arctan((np.sin(alpha_t) - 0.5*mu * np.sin(ip))
+                                      / (np.cos(alpha_t) + 0.5*mu * np.cos(ip))), alpha_ep)
         alpha_ep = np.where((~SectInProp & SectHasFlap), alpha_fl_t, alpha_ep)
         alpha_ep = np.where(((~SectInProp) & (~SectHasFlap)), alpha_t, alpha_ep)
 
@@ -170,10 +172,10 @@ class WingBlownLift:
         alpha_ep_drag = np.where((~SectInProp), 0, alpha_ep_drag)
 
         # Cd0_vec
-        Cd0_vec = np.where((SectInProp & SectHasFlap & (alpha_ep < alpha_fl_t_max)),
+        Cd0_vec = np.where((SectInProp & SectHasFlap & (alpha_fl_t < alpha_fl_t_max)),
                            Cd0_turbulent * ((1 + 2 * mu * BetaVec * np.cos(alpha_fl_t + ip) + (BetaVec * mu)**2) - 1),
                            0)
-        Cd0_vec = np.where((SectInProp & (~SectHasFlap) & (alpha_ep < alpha_t_max)),
+        Cd0_vec = np.where((SectInProp & (~SectHasFlap) & (alpha_t < alpha_t_max)),
                            Cd0_turbulent * ((1 + 2 * mu * BetaVec * np.cos(alpha_t + ip) + (BetaVec * mu)**2) - 1),
                            Cd0_vec)
         Cd0_vec = np.where(((~SectInProp) & SectHasFlap & (alpha_fl_t < alpha_fl_t_max)),
@@ -192,22 +194,20 @@ class WingBlownLift:
         LmFl = np.where((~SectInProp), 0, LmFl)
 
         # LocalCl (Lift coefficients)
-        LocalCl = np.where((SectHasFlap & (alpha_ep < alpha_fl_t_max)), Cl_alpha_vector * alpha_fl_t, 0)
-        LocalCl = np.where((SectHasFlap & (alpha_ep > alpha_fl_t_max)),
-                           Cl_alpha_vector * np.sin(alpha_fl_t_max)*np.cos(alpha_fl_t)
-                           / np.cos(alpha_fl_t_max), LocalCl)
-        LocalCl = np.where(((~SectHasFlap) & (alpha_ep < alpha_t_max)), Cl_alpha_vector * alpha_t, LocalCl)
-        LocalCl = np.where(((~SectHasFlap) & (alpha_ep > alpha_t_max)),
+        LocalCl = np.where((SectHasFlap & (alpha_fl_t < alpha_fl_t_max)), Cl_alpha_vector * alpha_fl_t, 0)
+        LocalCl = np.where((SectHasFlap & (alpha_fl_t > alpha_fl_t_max)),
+                           Cl_alpha_vector * np.sin(alpha_fl_t_max)*np.cos(alpha_fl_t) / np.cos(alpha_fl_t_max), LocalCl)
+        LocalCl = np.where(((~SectHasFlap) & (alpha_t < alpha_t_max)), Cl_alpha_vector * alpha_t, LocalCl)
+        LocalCl = np.where(((~SectHasFlap) & (alpha_t > alpha_t_max)),
                            Cl_alpha_vector * np.sin(alpha_t_max) * np.cos(alpha_t)/np.cos(alpha_t_max), LocalCl)
 
-        # Compute the augmented lift coefficient vector and the washed drag coefficient vector
+        # Compute the augmented lift coefficient vector
         BlownCl = LocalCl * (LmFl+1) * np.cos(-alpha_ep_drag)
-        PWashDrag = BlownCl * np.sin(-alpha_ep_drag)
 
         # Compute the lift coefficient, washed drag coefficient, and augmented drag friction coefficient.
         # Multiply by two since computations are done with just one semi-wing
         Cl_wing = 2 * np.sum(BlownCl * Area/S)
-        tempCdWash = 2 * np.sum(Area * PWashDrag/S)
+        tempCdWash = np.sum(Area * LocalCl * (LmFl + 1) * np.cos(-alpha_ep_drag) * np.sin(-alpha_ep_drag) / S)
         tempCd0 = 2 * np.sum(Area * Cd0_vec/S)
 
         # Compute the induced drag using Jameson method
